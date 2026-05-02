@@ -9,6 +9,17 @@ const lightboxCaption = document.getElementById('lightboxCaption');
 const lightboxCloseButton = document.querySelector('.lightbox-close');
 const heroSection = document.querySelector('.hero-section');
 const navLinks = document.querySelectorAll('.navbar .nav-link');
+const contactForm = document.getElementById('contactForm');
+const formStatus = document.getElementById('formStatus');
+const contactSubmit = document.getElementById('contactSubmit');
+
+const emailJsPublicKey = '1234566';
+const emailJsServiceId = '3256467698';
+const emailJsTemplateId = 'message from email';
+
+if (window.emailjs) {
+  emailjs.init(emailJsPublicKey);
+}
 
 const savedTheme = localStorage.getItem('travelled-series-theme');
 if (savedTheme === 'dark') {
@@ -108,7 +119,64 @@ navLinks.forEach((link) => {
   });
 });
 
-document.querySelector('.contact-form').addEventListener('submit', (event) => {
+const setFormStatus = (message, state) => {
+  formStatus.textContent = message;
+  formStatus.classList.remove('is-success', 'is-error');
+  if (state) {
+    formStatus.classList.add(state);
+  }
+};
+
+const validateContactForm = () => {
+  const name = contactForm.name.value.trim();
+  const email = contactForm.email.value.trim();
+  const subject = contactForm.subject.value.trim();
+  const message = contactForm.message.value.trim();
+
+  if (!name || !email || !subject || !message) {
+    setFormStatus('Please fill in all fields before sending.', 'is-error');
+    return null;
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    setFormStatus('Please enter a valid email address.', 'is-error');
+    return null;
+  }
+
+  return { name, email, subject, message };
+};
+
+contactForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  alert('Thanks for reaching out. This form is ready to connect to a backend or email service.');
+
+  const validatedValues = validateContactForm();
+  if (!validatedValues) {
+    return;
+  }
+
+  if (!window.emailjs) {
+    setFormStatus('Email service is not available right now.', 'is-error');
+    return;
+  }
+
+  contactSubmit.disabled = true;
+  setFormStatus('Sending message...', null);
+
+  try {
+    await emailjs.send(emailJsServiceId, emailJsTemplateId, {
+      from_name: validatedValues.name,
+      from_email: validatedValues.email,
+      subject: validatedValues.subject,
+      message: validatedValues.message,
+      to_email: 'dumresabin@gmail.com'
+    });
+
+    contactForm.reset();
+    setFormStatus('Message sent successfully.', 'is-success');
+  } catch (error) {
+    setFormStatus('Message could not be sent. Please try again later.', 'is-error');
+  } finally {
+    contactSubmit.disabled = false;
+  }
 });

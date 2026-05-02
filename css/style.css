@@ -1215,6 +1215,19 @@ body[data-theme="dark"] .contact-form .form-control {
     color: var(--text-soft);
 }
 
+.form-status {
+    min-height: 1.4rem;
+    font-weight: 600;
+}
+
+.form-status.is-success {
+    color: #2f9d57;
+}
+
+.form-status.is-error {
+    color: #d14b4b;
+}
+
 .site-footer {
     padding: 1.35rem 0;
     color: #ffffff;
